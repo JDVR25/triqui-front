@@ -24,9 +24,6 @@ export const AppRouter = () => {
         <Route exact path="/remote_Match">
           <RemoteMatch/>
         </Route>
-        <Route exact path="/login">
-          <Login/>
-        </Route>
       </Switch>
     </Router>
   )

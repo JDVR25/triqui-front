@@ -24,9 +24,6 @@ export const Navbar = () => {
         </button>
         <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
           <div className="navbar-nav">
-            <Link className="nav-link" aria-current="page" to="/login">
-              Iniciar sesion
-            </Link>
             <div className="navbar-nav-controls">
               <Link className="nav-link" to="/local_Match">
                 Juego Local
