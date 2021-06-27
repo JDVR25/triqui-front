@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import "./localMatch.css";
+import "./remoteMatch.css";
 
-export const LocalMatch = () => {
+export const RemoteMatch = () => {
     const cruz = "Cruz";
     const circulo = "Circulo";
     var inicial = [["", "", ""], ["", "", ""], ["", "", ""]];
@@ -9,8 +9,10 @@ export const LocalMatch = () => {
     const [ganador, setGanador] = useState("");
     const [empate, setEmpate] = useState(false);
     const [turno, setTurno] = useState(cruz);
-    
-    
+    const [ficha, setFicha] = useState("");
+    const [estado, setEstado] = useState("desconectado");
+    const [idDelJuego, setIdJuego] = useState("");
+    const [socket, setSocket] = useState(null);
 
     const verificarGanador = () => {
         if (!ganador && !empate) {
@@ -29,7 +31,7 @@ export const LocalMatch = () => {
             else if (tablero[0][2] && tablero[0][2] === tablero[1][1] && tablero[1][1] === tablero[2][0]) {
                 nuevoGanador = tablero[0][2];
             }
-            if (nuevoGanador){
+            if (nuevoGanador) {
                 setGanador(nuevoGanador);
             }
             else {
@@ -45,12 +47,12 @@ export const LocalMatch = () => {
             }
         }
     }
-    
+
 
     const cambioDeTurno = (fila, columna, e) => {
         e.preventDefault();
-        
-        if (tablero[fila][columna] === "" && !ganador && !empate) {
+
+        if (ficha === turno && tablero[fila][columna] === "" && !ganador && !empate) {
             var temp = [["", "", ""], ["", "", ""], ["", "", ""]];
             for (var i = 0; i < 3; i++) {
                 for (var c = 0; c < 3; c++) {
@@ -65,19 +67,64 @@ export const LocalMatch = () => {
             else if (turno === circulo) {
                 setTurno(cruz)
             }
-            
+            if (socket) {
+                var msgRespuesta = {
+                    idJuego: idDelJuego,
+                    tablero: temp,
+                    turno: ficha
+                };
+                socket.send(JSON.stringify(msgRespuesta));
+            }
+
         };
 
     }
 
-    useEffect(verificarGanador,[empate, ganador, tablero]);
-    
+    useEffect(verificarGanador, [empate, ganador, tablero]);
+
+    const buscarEncuentro = () => {
+        setEstado("buscando");
+        var ws = new WebSocket("ws://localhost:3001");
+
+        ws.onmessage = (msg) => {
+            var mensaje = JSON.parse(msg.data);
+            var tipo = mensaje.tipo;
+            if (tipo === "espera") {
+
+            }
+            else if (tipo === "inicio") {
+                setEstado("jugando");
+                setFicha(mensaje.ficha);
+                setIdJuego(mensaje.idJuego)
+                setTurno(cruz);
+            }
+            else if (tipo === "movimiento") {
+                setTablero(mensaje.tablero);
+                setTurno(mensaje.turno);
+            }
+            else if (tipo === "terminacion") {
+                setEstado("terminado");
+                if (mensaje.resultado === "empate") {
+                    setTablero(mensaje.tablero);
+                    setEmpate(true);
+
+                }
+                else if (mensaje.resultado === "victoria") {
+                    setTablero(mensaje.tablero);
+                    setGanador(mensaje.ganador);
+                }
+            }
+        };
+        setSocket(ws);
+    }
+
     return (
         <>
             <div className="container">
                 <div className="row justify-content-center">
                     <div className="col-md-6 text-center mb-5 turn">
                         <h1 className="heading-section">Es el turno de {turno}</h1>
+                        <h1 className="heading-section" style={{ display: ficha ? 'block' : 'none' }}>Tu ficha es {ficha}</h1>
                     </div>
                 </div>
                 <div className="row justify-content-center">
@@ -101,6 +148,8 @@ export const LocalMatch = () => {
                     <div className="col-md-6 text-center mb-5 turn">
                         <h2 className="heading-section" style={{ display: ganador ? 'block' : 'none' }}>El ganador es {ganador}</h2>
                         <h2 className="heading-section" style={{ display: empate ? 'block' : 'none' }}>No es posible hacer mas jugadas el juego termina en empate</h2>
+                        <button style={{ display: estado === "desconectado" ? 'inline-block' : 'none' }} type="button" className="btn btn-primary" onClick={buscarEncuentro}>Buscar partida</button>
+                        <h2 className="heading-section" style={{ display: estado === "buscando" ? 'block' : 'none' }}>Buscando contrincante</h2>
                     </div>
                 </div>
             </div>

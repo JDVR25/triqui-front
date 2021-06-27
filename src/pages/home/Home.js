@@ -19,7 +19,10 @@ export const Home = () => {
                                 <div className="d-flex">
                                     <div className="w-100">
                                         <Link to="/local_Match">
-                                            <button type="button" className="btn btn-primary">Juego Local</button>
+                                            <button type="button" className="btn btn-primary boton1">Juego Local</button>
+                                        </Link>
+                                        <Link to="/remote_Match">
+                                            <button type="button" className="btn btn-primary">Juego Remoto</button>
                                         </Link>
                                     </div>
                                 </div>

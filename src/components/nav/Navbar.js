@@ -32,6 +32,11 @@ export const Navbar = () => {
                 Juego Local
               </Link>
             </div>
+            <div className="navbar-nav-controls">
+              <Link className="nav-link" to="/Remote_Match">
+                Juego Remoto
+              </Link>
+            </div>
           </div>
         </div>
       </div>
